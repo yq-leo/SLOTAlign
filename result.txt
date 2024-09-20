@@ -1,0 +1,45 @@
+dblp Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 66.13% H@5 83.81% H@10 87.65% H@30 90.43% Time: 35393.17s
+ dblp Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 66.64% H@5 84.62% H@10 87.92% H@30 90.40% Time: 35766.68s
+ dblp Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:5
+H@1 0.95% H@5 4.94% H@10 9.19% H@30 22.63% Time: 227.99s
+ dblp Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:5
+H@1 0.95% H@5 4.96% H@10 9.19% H@30 22.65% Time: 227.54s
+ dblp Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:5
+H@1 1.50% H@5 5.73% H@10 9.96% H@30 22.61% Time: 226.18s
+ dblp Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:2
+H@1 0.08% H@5 0.45% H@10 0.91% H@30 2.57% Time: 133.53s
+ dblp Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 66.32% H@5 84.68% H@10 87.94% H@30 90.40% Time: 35647.63s
+ ACM-DBLP Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:2
+H@1 0.10% H@5 0.43% H@10 0.91% H@30 2.57% Time: 133.23s
+ Douban Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:500
+H@1 48.38% H@5 71.73% H@10 78.44% H@30 88.16% Time: 10.27s
+ Douban Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 48.16% H@5 69.16% H@10 74.86% H@30 83.13% Time: 16.54s
+ Douban Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:500
+H@1 47.37% H@5 71.73% H@10 78.99% H@30 88.16% Time: 10.49s
+ Douban Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 47.26% H@5 68.94% H@10 74.97% H@30 82.68% Time: 16.69s
+ Douban Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:500
+H@1 48.60% H@5 71.73% H@10 78.32% H@30 88.16% Time: 13.68s
+ Douban Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 47.26% H@5 69.05% H@10 74.86% H@30 83.46% Time: 19.99s
+ Douban Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:500
+H@1 47.82% H@5 71.62% H@10 78.55% H@30 88.16% Time: 10.02s
+ cora Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:500
+H@1 98.52% H@5 99.54% H@10 99.68% H@30 99.91% Time: 15.50s
+ phone-email Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:500
+H@1 1.37% H@5 6.25% H@10 11.12% H@30 25.87% Time: 2.90s
+ phone-email Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 1.62% H@5 6.25% H@10 11.25% H@30 25.50% Time: 5.37s
+ cora Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:500
+H@1 98.52% H@5 99.54% H@10 99.68% H@30 99.91% Time: 15.44s
+ phone-email Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 1.62% H@5 6.25% H@10 11.25% H@30 25.50% Time: 4.78s
+ phone-email Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:5 GW beta:0.01 ss:1, ep:1000
+H@1 1.00% H@5 3.75% H@10 6.62% H@30 13.25% Time: 4.85s
+ phone-email Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 1.62% H@5 5.75% H@10 10.63% H@30 25.87% Time: 5.38s
+ 

@@ -13,12 +13,13 @@ import torch_geometric
 from scipy.io import loadmat
 from dgl.nn.pytorch import GINConv, GraphConv
 from sklearn.decomposition import PCA
+
 seed = 1
 torch.manual_seed(seed)
 random.seed(seed)
 
 
-def my_check_align(pred, ground_truth, result_file=None):
+def compute_metrics_old(pred, ground_truth, result_file=None):
     g_map = {}
     for i in range(ground_truth.size(1)):
         g_map[ground_truth[1, i].item()] = ground_truth[0, i].item()
@@ -43,10 +44,44 @@ def my_check_align(pred, ground_truth, result_file=None):
     a10 /= len(g_list)
     a30 /= len(g_list)
     # print('H@1 %.2f%% H@5 %.2f%% H@10 %.2f%% H@30 %.2f%%' % (a1 * 100, a5 * 100, a10*100, a30*100))
-    return a1,a5,a10,a30
+    return a1, a5, a10, a30
 
 
-def my_check_align1(pred, ground_truth, result_file=None):
+def compute_metrics(pred, test_pairs):
+    hit_top_ks = (1, 5, 10, 30, 50, 100)
+    dissimilarity = torch.tensor(-pred.T).to(torch.float64)
+    test_pairs = test_pairs.T
+
+    distances1 = dissimilarity[test_pairs[:, 0]]
+    distances2 = dissimilarity.T[test_pairs[:, 1]]
+
+    hits = {}
+
+    ranks1 = torch.argsort(distances1, dim=1)
+    ranks2 = torch.argsort(distances2, dim=1)
+
+    # test_pairs = torch.from_numpy(test_pairs).to(torch.int64)
+    signal1_hit = ranks1 == test_pairs[:, 1].view(-1, 1)
+    signal2_hit = ranks2 == test_pairs[:, 0].view(-1, 1)
+    for k in hit_top_ks:
+        hits_ltr = torch.sum(signal1_hit[:, :k]) / test_pairs.shape[0]
+        hits_rtl = torch.sum(signal2_hit[:, :k]) / test_pairs.shape[0]
+        hits[k] = torch.max(hits_ltr, hits_rtl)
+
+    mrr_ltr = torch.mean(1 / (torch.where(ranks1 == test_pairs[:, 1].view(-1, 1))[1] + 1))
+    mrr_rtl = torch.mean(1 / (torch.where(ranks2 == test_pairs[:, 0].view(-1, 1))[1] + 1))
+    mrr = torch.max(mrr_ltr, mrr_rtl)
+
+    a1 = hits[1].item()
+    a5 = hits[5].item()
+    a10 = hits[10].item()
+    a30 = hits[30].item()
+    print('H@1 %.2f%% H@5 %.2f%% H@10 %.2f%% H@30 %.2f%% MRR %.2f%%' % (a1 * 100, a5 * 100, a10 * 100, a30 * 100, mrr * 100))
+
+    return a1, a5, a10, a30
+
+
+def compute_metrics1_old(pred, ground_truth, result_file=None):
     g_map = {}
     for i in range(ground_truth.size(1)):
         g_map[ground_truth[1, i].item()] = ground_truth[0, i].item()
@@ -65,8 +100,42 @@ def my_check_align1(pred, ground_truth, result_file=None):
     a1 /= len(g_list)
     a5 /= len(g_list)
     a10 /= len(g_list)
-    print('H@1 %.2f%% H@5 %.2f%% H@10 %.2f%%' % (a1 * 100, a5 * 100, a10*100))
-    return a1,a5,a10
+    print('H@1 %.2f%% H@5 %.2f%% H@10 %.2f%%' % (a1 * 100, a5 * 100, a10 * 100))
+    return a1, a5, a10
+
+
+def compute_metrics1(pred, test_pairs):
+    hit_top_ks = (1, 5, 10, 30, 50, 100)
+    dissimilarity = torch.tensor(-pred.T).to(torch.float64)
+    test_pairs = test_pairs.T
+
+    distances1 = dissimilarity[test_pairs[:, 0]]
+    distances2 = dissimilarity.T[test_pairs[:, 1]]
+
+    hits = {}
+
+    ranks1 = torch.argsort(distances1, dim=1)
+    ranks2 = torch.argsort(distances2, dim=1)
+
+    # test_pairs = torch.from_numpy(test_pairs).to(torch.int64)
+    signal1_hit = ranks1 == test_pairs[:, 1].view(-1, 1)
+    signal2_hit = ranks2 == test_pairs[:, 0].view(-1, 1)
+    for k in hit_top_ks:
+        hits_ltr = torch.sum(signal1_hit[:, :k]) / test_pairs.shape[0]
+        hits_rtl = torch.sum(signal2_hit[:, :k]) / test_pairs.shape[0]
+        hits[k] = torch.max(hits_ltr, hits_rtl)
+
+    mrr_ltr = torch.mean(1 / (torch.where(ranks1 == test_pairs[:, 1].view(-1, 1))[1] + 1))
+    mrr_rtl = torch.mean(1 / (torch.where(ranks2 == test_pairs[:, 0].view(-1, 1))[1] + 1))
+    mrr = torch.max(mrr_ltr, mrr_rtl)
+
+    a1 = hits[1].item()
+    a5 = hits[5].item()
+    a10 = hits[10].item()
+    a30 = hits[30].item()
+    print('H@1 %.2f%% H@5 %.2f%% H@10 %.2f%% H@30 %.2f%% MRR %.2f%%' % (a1 * 100, a5 * 100, a10 * 100, a30 * 100, mrr * 100))
+
+    return a1, a5, a10
 
 
 def cosine_similarity(Afeat, Bfeat):
@@ -75,6 +144,43 @@ def cosine_similarity(Afeat, Bfeat):
     for i in range(Bdim):
         cossim[i] = F.cosine_similarity(Afeat, Bfeat[i:i + 1].expand(Adim, Bfeat.shape[1]), dim=-1).view(-1)
     return cossim
+
+
+def myload_new(dataset_name, plain=False, edge_noise=0.):
+    print('dataset: {}, edge_noise: {}'.format(dataset_name, edge_noise))
+    f = np.load(f'data/{dataset_name}_0.2.npz')
+
+    if dataset_name == 'phone-email':
+        n1, n2 = 1000, 1003
+    elif dataset_name == 'foursquare-twitter':
+        n1, n2 = 5313, 5120
+    elif dataset_name == 'ACM-DBLP':
+        n1, n2 = 9872, 9916
+
+    if not plain:
+        Afeat, Bfeat = f['x1'].astype('float32'), f['x2'].astype('float32')
+    else:
+        Afeat, Bfeat = None, None
+    edge_index1, edge_index2 = f['edge_index1'].T.astype(np.int32), f['edge_index2'].T.astype(np.int32)
+    Aedge = (f['edge_index1'][0], f['edge_index1'][1])
+    Bedge = (f['edge_index2'][0], f['edge_index2'][1])
+    test_pairs = torch.tensor(f['test_pairs'].astype('int32')).T
+    anchor_links = f['pos_pairs'].astype('int32')
+
+    Adim = Afeat.shape[0] if Afeat is not None else n1
+    Bdim = Bfeat.shape[0] if Bfeat is not None else n2
+
+    Aadj, Badj = np.zeros([Adim, Adim]), np.zeros([Bdim, Bdim])
+
+    for u, v in zip(Aedge[0], Aedge[1]):
+        Aadj[u][v] = 1
+        Aadj[v][u] = 1
+
+    for u, v in zip(Bedge[0], Bedge[1]):
+        Badj[u][v] = 1
+        Badj[v][u] = 1
+
+    return Aadj, Badj, Afeat, Bfeat, test_pairs, anchor_links, edge_index1, edge_index2
 
 
 def myload(dataset_name='douban', edge_noise=0.):
@@ -88,9 +194,12 @@ def myload(dataset_name='douban', edge_noise=0.):
     elif dataset_name == 'dblp':
         f = np.load('data/ACM-DBLP_0.2.npz')
         Afeat, Bfeat = f['x1'].astype('float32'), f['x2'].astype('float32')
+        edge_index1, edge_index2 = f['edge_index1'].T.astype(np.int32), f['edge_index2'].T.astype(np.int32)
         Aedge = (f['edge_index1'][0], f['edge_index1'][1])
         Bedge = (f['edge_index2'][0], f['edge_index2'][1])
-        ground_truth = torch.tensor(np.concatenate([f['pos_pairs'], f['test_pairs']],0).astype('int32')).T
+        ground_truth = torch.tensor(np.concatenate([f['pos_pairs'], f['test_pairs']], 0).astype('int32')).T
+        test_pairs = torch.tensor(f['test_pairs'].astype('int32')).T
+        anchor_links = f['pos_pairs'].astype('int32')
     elif dataset_name == 'cora':
         dataset = dgl.data.CoraGraphDataset()
     elif dataset_name == 'citeseer':
@@ -133,63 +242,67 @@ def myload(dataset_name='douban', edge_noise=0.):
 
     if edge_noise > 0.001:
         Badj = add_noise_edge(Bedge, Badj, edge_noise)
-    return Aadj, Badj, Afeat, Bfeat, ground_truth
+    return Aadj, Badj, Afeat, Bfeat, test_pairs, anchor_links, edge_index1, edge_index2
 
 
 def load_final(dataset_name):
-	x = loadmat(os.path.join('data', 'final', '{name}.mat'.format(name=dataset_name)))
-	if dataset_name=='douban':
-		return (x['online_edge_label'][0][1], 
-			x['online_node_label'], 
-			x['offline_edge_label'][0][1], 
-			x['offline_node_label'],
-			x['ground_truth'].T,
-			x['H'])
-	
+    x = loadmat(os.path.join('data', 'final', '{name}.mat'.format(name=dataset_name)))
+    if dataset_name == 'douban':
+        return (x['online_edge_label'][0][1],
+                x['online_node_label'],
+                x['offline_edge_label'][0][1],
+                x['offline_node_label'],
+                x['ground_truth'].T,
+                x['H'])
+
+
 def load_dbp(dataset_name, language='en_fr'):
-	dataset = torch_geometric.datasets.DBP15K('data/dbp15k', language)
-	edge1 = dataset[0].edge_index1
-	edge2 = dataset[0].edge_index2
-	feature1 = dataset[0].x1.view(dataset[0].x1.size(0), -1)
-	feature2 = dataset[0].x2.view(dataset[0].x2.size(0), -1)
-	ground_truth = torch.cat( (dataset[0].train_y, dataset[0].test_y), dim=-1)
-	return edge1, feature1, edge2, feature2, ground_truth
-	
+    dataset = torch_geometric.datasets.DBP15K('data/dbp15k', language)
+    edge1 = dataset[0].edge_index1
+    edge2 = dataset[0].edge_index2
+    feature1 = dataset[0].x1.view(dataset[0].x1.size(0), -1)
+    feature2 = dataset[0].x2.view(dataset[0].x2.size(0), -1)
+    ground_truth = torch.cat((dataset[0].train_y, dataset[0].test_y), dim=-1)
+    return edge1, feature1, edge2, feature2, ground_truth
+
+
 def load_geometric(dataset_name):
-	if dataset_name == 'ppi':
-		dataset = torch_geometric.datasets.PPI(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data', 'ppi'))
-	edge1 = dataset[0].edge_index
-	feature1 = dataset[0].x
-	edge2 = edge1.clone()
-	ledge = edge2.size(1)
-	edge2 = edge2[:, torch.randperm(ledge)[:int(ledge*0.9)]]
-	perm = torch.randperm(feature1.size(0))
-	perm_back = torch.tensor(list(range(feature1.size(0))))
-	perm_mapping = torch.stack([perm_back, perm])
-	edge2 = perm[edge2.view(-1)].view(2, -1)
-	edge2 = edge2[:, torch.argsort(edge2[0])]
-	feature2 = torch.zeros(feature1.size())
-	feature2[perm] = feature1.clone()
-	return edge1, feature1, edge2, feature2, perm_mapping
-	
+    if dataset_name == 'ppi':
+        dataset = torch_geometric.datasets.PPI(
+            os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data', 'ppi'))
+    edge1 = dataset[0].edge_index
+    feature1 = dataset[0].x
+    edge2 = edge1.clone()
+    ledge = edge2.size(1)
+    edge2 = edge2[:, torch.randperm(ledge)[:int(ledge * 0.9)]]
+    perm = torch.randperm(feature1.size(0))
+    perm_back = torch.tensor(list(range(feature1.size(0))))
+    perm_mapping = torch.stack([perm_back, perm])
+    edge2 = perm[edge2.view(-1)].view(2, -1)
+    edge2 = edge2[:, torch.argsort(edge2[0])]
+    feature2 = torch.zeros(feature1.size())
+    feature2[perm] = feature1.clone()
+    return edge1, feature1, edge2, feature2, perm_mapping
+
+
 def load(dataset_name):
-	if dataset_name in ['ppi']:
-		return load_geometric(dataset_name)
-	elif dataset_name in ['douban']:
-		return load_final(dataset_name)
+    if dataset_name in ['ppi']:
+        return load_geometric(dataset_name)
+    elif dataset_name in ['douban']:
+        return load_final(dataset_name)
 
 
 def add_noise_edge(Aedge, Aadj, edge_noise):
     Aadjn = np.zeros_like(Aadj)
     for u, v in zip(Aedge[0], Aedge[1]):
-        if u==v:
+        if u == v:
             Aadjn[u][v] = 1
-        if u<v:
+        if u < v:
             if random.random() > edge_noise:
                 Aadjn[u][v], Aadjn[v][u] = 1, 1
             else:
                 while 1:
-                    u, v = random.randint(0, Aadj.shape[0]-1), random.randint(0, Aadj.shape[0]-1)
+                    u, v = random.randint(0, Aadj.shape[0] - 1), random.randint(0, Aadj.shape[0] - 1)
                     if u != v and Aadj[u][v] == 0:
                         Aadjn[u][v], Aadjn[v][u] = 1, 1
                         break
@@ -198,7 +311,7 @@ def add_noise_edge(Aedge, Aadj, edge_noise):
 
 def feature_truncation(Bfeat, ratio=0.):
     feat_dim = Bfeat.shape[1]
-    trancate_featdim = int(feat_dim*(1-ratio)+0.01)
+    trancate_featdim = int(feat_dim * (1 - ratio) + 0.01)
     left_ids = random.sample(range(feat_dim), trancate_featdim)
     random.shuffle(left_ids)
     print('left dims:', len(left_ids))
@@ -206,7 +319,7 @@ def feature_truncation(Bfeat, ratio=0.):
 
 
 def feature_compression(Bfeat, ratio=0.):
-    pca = PCA(n_components=1-ratio, svd_solver='full')
+    pca = PCA(n_components=1 - ratio, svd_solver='full')
     # Bfeat = pca
     Bfeat = pca.fit_transform(Bfeat)
     print('left dims:', Bfeat.shape[1])
@@ -215,7 +328,7 @@ def feature_compression(Bfeat, ratio=0.):
 
 def feature_permutation(Bfeat, ratio=0.):
     feat_dim = Bfeat.shape[1]
-    permutation_featdim = int(feat_dim*ratio+0.01)
+    permutation_featdim = int(feat_dim * ratio + 0.01)
     permutation_ids = random.sample(range(feat_dim), permutation_featdim)
     permutation_ids2 = copy.deepcopy(permutation_ids)
     random.shuffle(permutation_ids2)
@@ -259,7 +372,7 @@ def euclidean_proj_simplex(v, s=1):
     u = np.sort(v)[::-1]
     cssv = np.cumsum(u)
     # get the number of > 0 components of the optimal solution
-    rho = np.nonzero(u * np.arange(1, n+1) > (cssv - s))[0][-1]
+    rho = np.nonzero(u * np.arange(1, n + 1) > (cssv - s))[0][-1]
     # compute the Lagrange multiplier associated to the simplex constraint
     theta = (cssv[rho] - s) / (rho + 1.0)
     # compute the projection by thresholding v using theta

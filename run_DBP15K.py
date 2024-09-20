@@ -168,7 +168,7 @@ def run_DBP15K(lang, translate=True, layers=2, gw_beta=0.001, gw_epoch=1000, ste
     X = SLOTAlign(As, Bs, initX, step_size=step_size, gw_beta=gw_beta, gw_epoch=gw_epoch)
     ground_truth = torch.cat([torch.tensor(list(range(4500,X.shape[0]))).unsqueeze(0),
                             torch.tensor(list(range(4500,X.shape[0]))).unsqueeze(0)], 0)
-    a1,a5,a10 = my_check_align1(X, ground_truth)
+    a1,a5,a10 = compute_metrics1(X, ground_truth)
     time_ed = time.time()
     with open('result.txt', 'a+') as f:
         f.write('Lang: {} Trans {} Layers {} beta {} H@1 {:.3f} H@5 {:.3f} H@10 {:.3f} Time {:.2f}\n'.format(

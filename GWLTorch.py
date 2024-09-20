@@ -31,7 +31,7 @@ def gw_torch(cost_s, cost_t, p_s=None, p_t=None, trans0=None, beta = 1e-1, error
         if oi % 20 == 0 and oi > 2:
             if gt is not None:
                 res=trans0.T.cpu().numpy()
-                a1,a5,a10 = my_check_align1(res, gt)
+                a1,a5,a10 = compute_metrics1(res, gt)
             print(oi, (cost_s ** 2).mean() + (cost_t ** 2).mean()-torch.trace(cost_s @ trans @ cost_t @ trans.T),a1,a5,a10)
     return trans
 
