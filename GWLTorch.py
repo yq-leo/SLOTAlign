@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 import numpy as np
 import torch
 import networkx as nx
@@ -9,6 +11,8 @@ from utils import *
 def gw_torch(cost_s, cost_t, p_s=None, p_t=None, trans0=None, beta = 1e-1, error_bound = 1e-10,
                              outer_iter = 200, inner_iter = 1, gt=None):
     # a = torch.ones_like(p_s)/p_s.shape[0]
+    hits_k_max = defaultdict(int)
+    mrr_max = 0
     if trans0 is None:
         trans0 = p_s @ p_t.T
     for oi in range(outer_iter):
@@ -31,9 +35,14 @@ def gw_torch(cost_s, cost_t, p_s=None, p_t=None, trans0=None, beta = 1e-1, error
         if oi % 20 == 0 and oi > 2:
             if gt is not None:
                 res=trans0.T.cpu().numpy()
-                a1,a5,a10 = compute_metrics1(res, gt)
+                a1, a5, a10, a30, mrr = compute_metrics1(res, gt)
+                hits_k_max[1] = max(hits_k_max[1], a1)
+                hits_k_max[5] = max(hits_k_max[5], a5)
+                hits_k_max[10] = max(hits_k_max[10], a10)
+                hits_k_max[30] = max(hits_k_max[30], a30)
+                mrr_max = max(mrr_max, mrr)
             print(oi, (cost_s ** 2).mean() + (cost_t ** 2).mean()-torch.trace(cost_s @ trans @ cost_t @ trans.T),a1,a5,a10)
-    return trans
+    return trans, hits_k_max, mrr_max
 
 
 def add_noisy_edges(graph: nx.graph, noisy_level: float) -> nx.graph:

@@ -78,7 +78,7 @@ def compute_metrics(pred, test_pairs):
     a30 = hits[30].item()
     print('H@1 %.2f%% H@5 %.2f%% H@10 %.2f%% H@30 %.2f%% MRR %.2f%%' % (a1 * 100, a5 * 100, a10 * 100, a30 * 100, mrr * 100))
 
-    return a1, a5, a10, a30
+    return a1, a5, a10, a30, mrr
 
 
 def compute_metrics1_old(pred, ground_truth, result_file=None):
@@ -135,7 +135,7 @@ def compute_metrics1(pred, test_pairs):
     a30 = hits[30].item()
     print('H@1 %.2f%% H@5 %.2f%% H@10 %.2f%% H@30 %.2f%% MRR %.2f%%' % (a1 * 100, a5 * 100, a10 * 100, a30 * 100, mrr * 100))
 
-    return a1, a5, a10
+    return a1, a5, a10, a30, mrr
 
 
 def cosine_similarity(Afeat, Bfeat):
@@ -378,3 +378,40 @@ def euclidean_proj_simplex(v, s=1):
     # compute the projection by thresholding v using theta
     w = (v - theta).clip(min=0)
     return w
+
+
+def perturb_attr(x, ratio, strong_noise=False):
+    """
+    Adding attribute noise through feature perturbation.
+    :param x: input node attributes
+    :param ratio: noise ratio
+    :param strong_noise: whether to use strong noise
+    :return: perturbed node attributes
+    """
+
+    num_node, num_attr = x.shape
+    num_perturb_attrs = int(num_attr * ratio)
+
+    if strong_noise:
+        for idx in range(num_node):
+            perturbed_attr = np.random.choice(num_attr, num_perturb_attrs, replace=False)
+            x[idx, perturbed_attr] = 1 - x[idx, perturbed_attr]
+
+    else:
+        perturbed_attr = np.random.choice(num_attr, num_perturb_attrs, replace=False)
+        x[:, perturbed_attr] = 1 - x[:, perturbed_attr]
+
+    return x
+
+
+def rm_out(arr):
+    """
+    Remove outliers from an array
+    :param arr: input array
+    :return:  without outliers
+    """
+    arr = np.sort(arr)
+    if len(arr) <= 3:
+        return arr
+    num_rm = len(arr) // 2
+    return arr[int(num_rm / 2) + num_rm % 2: -(num_rm // 2)]

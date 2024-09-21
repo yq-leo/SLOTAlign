@@ -4,7 +4,7 @@ import os
 from tqdm import tqdm
 
 
-def get_rwr_matrix(G1, G2, anchor_links, dataset, ratio, dtype=np.float32):
+def get_rwr_matrix(G1, G2, anchor_links, dataset, ratio, edge_noise=0, dtype=np.float32):
     """
     Get distance matrix of the network
     :param G1: input graph 1
@@ -12,24 +12,24 @@ def get_rwr_matrix(G1, G2, anchor_links, dataset, ratio, dtype=np.float32):
     :param anchor_links: anchor links
     :param dataset: dataset name
     :param ratio: training ratio
+    :param edge_noise: edge noise ratio
     :param dtype: data type
     :return: distance matrix (num of nodes x num of anchor nodes)
     """
     if not os.path.exists(f'datasets/rwr'):
         os.makedirs(f'datasets/rwr')
 
-    if os.path.exists(f'datasets/rwr/rwr_emb_{dataset}_{ratio:.1f}.npz'):
+    if os.path.exists(f'datasets/rwr/rwr_emb_{dataset}_{ratio:.1f}.npz') and edge_noise == 0:
         print(f"Loading RWR scores from datasets/rwr/rwr_emb_{dataset}_{ratio:.1f}.npz...", end=" ")
         data = np.load(f'datasets/rwr/rwr_emb_{dataset}_{ratio:.1f}.npz')
         rwr1, rwr2 = data['rwr1'], data['rwr2']
         print("Done")
     else:
         rwr1, rwr2 = rwr_scores(G1, G2, anchor_links, dtype)
-        if not os.path.exists(f'datasets/rwr'):
-            os.makedirs(f'datasets/rwr')
-        print(f"Saving RWR scores to datasets/rwr/rwr_emb_{dataset}_{ratio:.1f}.npz...", end=" ")
-        np.savez(f'datasets/rwr/rwr_emb_{dataset}_{ratio:.1f}.npz', rwr1=rwr1, rwr2=rwr2)
-        print("Done")
+        if edge_noise == 0:
+            print(f"Saving RWR scores to datasets/rwr/rwr_emb_{dataset}_{ratio:.1f}.npz...", end=" ")
+            np.savez(f'datasets/rwr/rwr_emb_{dataset}_{ratio:.1f}.npz', rwr1=rwr1, rwr2=rwr2)
+            print("Done")
 
     return rwr1, rwr2
 
