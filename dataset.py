@@ -3,6 +3,7 @@ import networkx as nx
 import torch
 from torch_geometric.data import Data
 from torch_geometric.utils import to_dense_adj
+import scipy.io as sio
 
 
 def load_data(dataset, p, use_attr, dtype=np.float32):
@@ -28,6 +29,30 @@ def load_data(dataset, p, use_attr, dtype=np.float32):
         x1, x2 = None, None
 
     return edge_index1, edge_index2, x1, x2, anchor_links, test_pairs
+
+
+def load_data_mat(dataset, dtype=np.float32):
+    """
+    Load dataset from .mat file.
+    :param dataset: dataset name
+    :param dtype: data type
+    :return:
+        edge_index1, edge_index2: edge list of graph G1, G2
+        x1, x2: input node attributes of graph G1, G2
+        anchor_links: training node alignments, i.e., anchor links
+        test_pairs: test node alignments
+    """
+
+    data = sio.loadmat(f'{dataset}.mat')
+    adj1, adj2 = data['A1'].toarray().astype(int), data['A2'].toarray().astype(int)
+    n1, n2 = adj1.shape[0], adj2.shape[0]
+    edge_index1 = np.array(np.where(adj1 == 1)).T
+    edge_index2 = np.array(np.where(adj2 == 1)).T
+    H = data['H'].toarray().astype(int)
+    anchor_links = np.array(np.where(H == 1)).T
+    test_pairs = data['gnd'].astype(int) - 1
+
+    return adj1, adj2, None, None, test_pairs, anchor_links, edge_index1, edge_index2
 
 
 def build_nx_graph(edge_index, anchor_nodes, x=None):

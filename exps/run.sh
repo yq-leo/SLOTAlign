@@ -1,0 +1,16 @@
+python SLOTAlign.py --dataset=G500 --runs=3 --record
+python SLOTAlign.py --dataset=G1000 --runs=3 --record
+python SLOTAlign.py --dataset=G2000 --runs=3 --record
+python SLOTAlign.py --dataset=G3000 --runs=3 --record
+python SLOTAlign.py --dataset=G4000 --runs=3 --record
+python SLOTAlign.py --dataset=G5000 --runs=3 --record
+python SLOTAlign.py --dataset=G6000 --runs=3 --record
+python SLOTAlign.py --dataset=G7000 --runs=3 --record
+python SLOTAlign.py --dataset=G8000 --runs=3 --record
+python SLOTAlign.py --dataset=G9000 --runs=3 --record
+python SLOTAlign.py --dataset=G10000 --runs=3 --record
+python SLOTAlign.py --dataset=G11000 --runs=3 --record
+python SLOTAlign.py --dataset=G12000 --runs=3 --record
+python SLOTAlign.py --dataset=G13000 --runs=3 --record
+python SLOTAlign.py --dataset=G14000 --runs=3 --record
+python SLOTAlign.py --dataset=G15000 --runs=3 --record

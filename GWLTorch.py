@@ -6,7 +6,7 @@ import copy
 from utils import *
 
 
-def gw_torch(cost_s, cost_t, p_s=None, p_t=None, trans0=None, beta = 1e-1, error_bound = 1e-10,
+def gw_torch(cost_s, cost_t, p_s=None, p_t=None, trans0=None, beta = 1e-1, error_bound = 1e-5,
                              outer_iter = 200, inner_iter = 1, gt=None):
     # a = torch.ones_like(p_s)/p_s.shape[0]
     if trans0 is None:
@@ -25,7 +25,6 @@ def gw_torch(cost_s, cost_t, p_s=None, p_t=None, trans0=None, beta = 1e-1, error
         trans = (a @ b.T) * kernel
         relative_error = torch.sum(torch.abs(trans - trans0)) / torch.sum(torch.abs(trans0))
         if relative_error < error_bound:
-            print(relative_error)
             break
         trans0 = trans
         if oi % 20 == 0 and oi > 2:

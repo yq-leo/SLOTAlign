@@ -42,4 +42,22 @@ H@1 1.62% H@5 6.25% H@10 11.25% H@30 25.50% Time: 4.78s
 H@1 1.00% H@5 3.75% H@10 6.62% H@30 13.25% Time: 4.85s
  phone-email Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
 H@1 1.62% H@5 5.75% H@10 10.63% H@30 25.87% Time: 5.38s
+ phone-email Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 1.62% H@5 6.25% H@10 11.25% H@30 25.50% Time: 4.99s
+ phone-email Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 1.62% H@5 6.25% H@10 11.25% H@30 25.50% Time: 186.95s
+ phone-email Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 1.62% H@5 6.25% H@10 11.38% H@30 25.75% Time: 80.65s
+ phone-email Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 1.62% H@5 6.25% H@10 11.38% H@30 25.75% Time: 81.33s
+ phone-email Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 1.62% H@5 6.25% H@10 11.38% H@30 25.75% Time: 81.40s
+ G500 Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 0.00% H@5 0.00% H@10 0.00% H@30 50.00% Time: 3.79s
+ G1000 Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 0.00% H@5 0.00% H@10 0.00% H@30 0.00% Time: 16.63s
+ G2000 Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:1000
+H@1 0.00% H@5 0.00% H@10 0.00% H@30 0.00% Time: 107.59s
+ G1000 Edge Noise:0.0 Feat Noise:0.0 Type:0 Bases:4 GW beta:0.01 ss:1, ep:500
+H@1 0.00% H@5 0.00% H@10 0.00% H@30 0.00% Time: 11.16s
  

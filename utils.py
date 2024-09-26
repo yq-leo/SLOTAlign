@@ -60,7 +60,7 @@ def compute_metrics(pred, test_pairs):
     ranks1 = torch.argsort(distances1, dim=1)
     ranks2 = torch.argsort(distances2, dim=1)
 
-    # test_pairs = torch.from_numpy(test_pairs).to(torch.int64)
+    test_pairs = torch.from_numpy(test_pairs).to(torch.int64)
     signal1_hit = ranks1 == test_pairs[:, 1].view(-1, 1)
     signal2_hit = ranks2 == test_pairs[:, 0].view(-1, 1)
     for k in hit_top_ks:
@@ -117,7 +117,7 @@ def compute_metrics1(pred, test_pairs):
     ranks1 = torch.argsort(distances1, dim=1)
     ranks2 = torch.argsort(distances2, dim=1)
 
-    # test_pairs = torch.from_numpy(test_pairs).to(torch.int64)
+    test_pairs = torch.from_numpy(test_pairs).to(torch.int64)
     signal1_hit = ranks1 == test_pairs[:, 1].view(-1, 1)
     signal2_hit = ranks2 == test_pairs[:, 0].view(-1, 1)
     for k in hit_top_ks:
@@ -158,7 +158,7 @@ def myload_new(dataset_name, plain=False, edge_noise=0.):
         n1, n2 = 9872, 9916
 
     if not plain:
-        Afeat, Bfeat = f['x1'].astype('float32'), f['x2'].astype('float32')
+        Afeat, Bfeat = f['x1'].astype('float64'), f['x2'].astype('float64')
     else:
         Afeat, Bfeat = None, None
     edge_index1, edge_index2 = f['edge_index1'].T.astype(np.int32), f['edge_index2'].T.astype(np.int32)
