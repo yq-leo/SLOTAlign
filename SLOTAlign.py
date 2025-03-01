@@ -2,6 +2,8 @@ import json
 import time
 from collections import defaultdict
 
+import torch
+
 from GWLTorch import *
 from utils import *
 from distance import *
@@ -63,8 +65,12 @@ for run in range(args.runs):
         Afeat = rwr1
         Bfeat = rwr2
     Adim, Bdim = Afeat.shape[0], Bfeat.shape[0]
-    Ag = dgl.graph(np.nonzero(Aadj), num_nodes=Adim)
-    Bg = dgl.graph(np.nonzero(Badj), num_nodes=Bdim)
+    # Ag = dgl.graph(np.nonzero(Aadj), num_nodes=Adim)
+    # Bg = dgl.graph(np.nonzero(Badj), num_nodes=Bdim)
+    A_edge_index = torch.nonzero(torch.from_numpy(Aadj).to(torch.int64)).T
+    B_edge_index = torch.nonzero(torch.from_numpy(Badj).to(torch.int64)).T
+    Ag = Data(x=torch.from_numpy(Afeat).float(), edge_index=A_edge_index, num_nodes=Adim)
+    Bg = Data(x=torch.from_numpy(Bfeat).float(), edge_index=B_edge_index, num_nodes=Bdim)
     Afeat -= Afeat.mean(0)
     Bfeat -= Bfeat.mean(0)
 
@@ -86,16 +92,20 @@ for run in range(args.runs):
 
     time_st = time.time()
     layers = args.bases - 2
-    conv = GraphConv(0, 0, norm='both', weight=False, bias=False)
+    # conv = GraphConv(0, 0, norm='both', weight=False, bias=False)
+    conv = ParamFreeGraphConv()
     Afeats = [torch.clone(Afeat)]
     Bfeats = [torch.clone(Bfeat)]
     Ag = Ag.to('cuda:0')
     Bg = Bg.to('cuda:0')
     for i in range(layers):
-        Afeats.append(conv(dgl.add_self_loop(Ag), torch.clone(Afeats[-1])).detach().clone())
-        Bfeats.append(conv(dgl.add_self_loop(Bg), torch.clone(Bfeats[-1])).detach().clone())
+        # Afeats.append(conv(dgl.add_self_loop(Ag), torch.clone(Afeats[-1])).detach().clone())
+        # Bfeats.append(conv(dgl.add_self_loop(Bg), torch.clone(Bfeats[-1])).detach().clone())
+        Afeats.append(conv(Ag.x, Ag.edge_index).detach().clone())
+        Bfeats.append(conv(Bg.x, Bg.edge_index).detach().clone())
 
-    Asims, Bsims = [Ag.adj().to_dense().cuda()], [Bg.adj().to_dense().cuda()]
+    # Asims, Bsims = [Ag.adj().to_dense().cuda()], [Bg.adj().to_dense().cuda()]
+    Asims, Bsims = [torch.from_numpy(Aadj).float().cuda()], [torch.from_numpy(Badj).float().cuda()]
     for i in range(len(Afeats)):
         Afeat = Afeats[i]
         Bfeat = Bfeats[i]
@@ -203,10 +213,10 @@ if args.record:
         else:
             header = f"{args.dataset}_(attr-{args.attr_noise_rate:.1f}{'_strong' if args.strong_noise else ''})"
         writer.writerow(
-            [header] + [f"{final_hits[k]:.3f}" for k in topk] + [f"{final_mrr:.3f}"] + [f"{final_hits_std[k]:.3f}" for k
+            [header] + [f"{final_hits[k]:.4f}" for k in topk] + [f"{final_mrr:.4f}"] + [f"{final_hits_std[k]:.4f}" for k
                                                                                         in topk] + [
                 f"{final_mrr_std:.3f}"])
         if args.robust:
             writer.writerow(
-                [header + "_robust"] + [f"{final_hits_robust[k]:.3f}" for k in topk] + [f"{final_mrr_robust:.3f}"] + [
-                    f"{final_hits_robust_std[k]:.3f}" for k in topk] + [f"{final_mrr_robust_std:.3f}"])
+                [header + "_robust"] + [f"{final_hits_robust[k]:.4f}" for k in topk] + [f"{final_mrr_robust:.4f}"] + [
+                    f"{final_hits_robust_std[k]:.4f}" for k in topk] + [f"{final_mrr_robust_std:.4f}"])

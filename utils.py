@@ -6,12 +6,10 @@ import itertools
 import torch.nn.functional as F
 import time
 import argparse
-import dgl
 import pickle
 import os
 import torch_geometric
 from scipy.io import loadmat
-from dgl.nn.pytorch import GINConv, GraphConv
 from sklearn.decomposition import PCA
 
 seed = 1
@@ -183,6 +181,7 @@ def myload_new(dataset_name, plain=False, edge_noise=0.):
     return Aadj, Badj, Afeat, Bfeat, test_pairs, anchor_links, edge_index1, edge_index2
 
 
+"""
 def myload(dataset_name='douban', edge_noise=0.):
     print('dataset: {}, edge_noise: {}'.format(dataset_name, edge_noise))
 
@@ -243,6 +242,7 @@ def myload(dataset_name='douban', edge_noise=0.):
     if edge_noise > 0.001:
         Badj = add_noise_edge(Bedge, Badj, edge_noise)
     return Aadj, Badj, Afeat, Bfeat, test_pairs, anchor_links, edge_index1, edge_index2
+"""
 
 
 def load_final(dataset_name):
