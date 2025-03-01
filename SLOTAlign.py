@@ -67,12 +67,12 @@ for run in range(args.runs):
     Adim, Bdim = Afeat.shape[0], Bfeat.shape[0]
     # Ag = dgl.graph(np.nonzero(Aadj), num_nodes=Adim)
     # Bg = dgl.graph(np.nonzero(Badj), num_nodes=Bdim)
-    A_edge_index = torch.nonzero(torch.from_numpy(Aadj).to(torch.int64)).T
-    B_edge_index = torch.nonzero(torch.from_numpy(Badj).to(torch.int64)).T
-    Ag = Data(x=torch.from_numpy(Afeat).float(), edge_index=A_edge_index, num_nodes=Adim)
-    Bg = Data(x=torch.from_numpy(Bfeat).float(), edge_index=B_edge_index, num_nodes=Bdim)
     Afeat -= Afeat.mean(0)
     Bfeat -= Bfeat.mean(0)
+    A_edge_index = torch.nonzero(torch.from_numpy(Aadj).to(torch.int64)).T
+    B_edge_index = torch.nonzero(torch.from_numpy(Badj).to(torch.int64)).T
+    Ag = Data(edge_index=A_edge_index, num_nodes=Adim)
+    Bg = Data(edge_index=B_edge_index, num_nodes=Bdim)
 
     if args.truncate:
         Afeat = Afeat[:, :100]
@@ -101,8 +101,8 @@ for run in range(args.runs):
     for i in range(layers):
         # Afeats.append(conv(dgl.add_self_loop(Ag), torch.clone(Afeats[-1])).detach().clone())
         # Bfeats.append(conv(dgl.add_self_loop(Bg), torch.clone(Bfeats[-1])).detach().clone())
-        Afeats.append(conv(Ag.x, Ag.edge_index).detach().clone())
-        Bfeats.append(conv(Bg.x, Bg.edge_index).detach().clone())
+        Afeats.append(conv(Afeats[-1], Ag.edge_index).detach().clone())
+        Bfeats.append(conv(Bfeats[-1], Bg.edge_index).detach().clone())
 
     # Asims, Bsims = [Ag.adj().to_dense().cuda()], [Bg.adj().to_dense().cuda()]
     Asims, Bsims = [torch.from_numpy(Aadj).float().cuda()], [torch.from_numpy(Badj).float().cuda()]

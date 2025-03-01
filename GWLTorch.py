@@ -5,6 +5,7 @@ import torch
 import networkx as nx
 import random
 import copy
+
 from utils import *
 
 from torch_geometric.nn.conv import MessagePassing
@@ -33,6 +34,12 @@ class ParamFreeGraphConv(MessagePassing):
         if norm is not None:
             return norm.view(-1, 1) * x_j
         return x_j
+
+    def message_and_aggregate(self, edge_index):
+        pass
+
+    def edge_update(self):
+        pass
 
 
 def gw_torch(cost_s, cost_t, p_s=None, p_t=None, trans0=None, beta = 1e-1, error_bound = 1e-10,
