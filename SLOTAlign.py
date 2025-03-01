@@ -94,15 +94,15 @@ for run in range(args.runs):
     layers = args.bases - 2
     # conv = GraphConv(0, 0, norm='both', weight=False, bias=False)
     conv = ParamFreeGraphConv()
-    Afeats = [torch.clone(Afeat)]
-    Bfeats = [torch.clone(Bfeat)]
+    Afeats = [Afeat]
+    Bfeats = [Bfeat]
     Ag = Ag.to('cuda:0')
     Bg = Bg.to('cuda:0')
     for i in range(layers):
         # Afeats.append(conv(dgl.add_self_loop(Ag), torch.clone(Afeats[-1])).detach().clone())
         # Bfeats.append(conv(dgl.add_self_loop(Bg), torch.clone(Bfeats[-1])).detach().clone())
-        Afeats.append(conv(Afeats[-1], Ag.edge_index).detach().clone())
-        Bfeats.append(conv(Bfeats[-1], Bg.edge_index).detach().clone())
+        Afeats.append(conv(Afeats[-1], Ag.edge_index).detach())
+        Bfeats.append(conv(Bfeats[-1], Bg.edge_index).detach())
 
     # Asims, Bsims = [Ag.adj().to_dense().cuda()], [Bg.adj().to_dense().cuda()]
     Asims, Bsims = [torch.from_numpy(Aadj).float().cuda()], [torch.from_numpy(Badj).float().cuda()]
@@ -126,22 +126,45 @@ for run in range(args.runs):
     alpha0 = np.ones(layers + 2).astype(np.float32) / (layers + 2)
     beta0 = np.ones(layers + 2).astype(np.float32) / (layers + 2)
     hits_k_max, mrr_max = defaultdict(int), 0
+
     for ii in range(args.joint_epoch):
-        alpha = torch.autograd.Variable(torch.tensor(alpha0)).cuda()
-        alpha.requires_grad = True
-        beta = torch.autograd.Variable(torch.tensor(beta0)).cuda()
-        beta.requires_grad = True
+        # Create tensors with gradient tracking directly.
+        alpha = torch.tensor(alpha0, device="cuda", requires_grad=True)
+        beta = torch.tensor(beta0, device="cuda", requires_grad=True)
+
         A = (As * alpha).sum(2)
         B = (Bs * beta).sum(2)
         objective = (A ** 2).mean() + (B ** 2).mean() - torch.trace(A @ X @ B @ X.T)
+
+        # Compute gradients for alpha and update
         alpha_grad = torch.autograd.grad(outputs=objective, inputs=alpha, retain_graph=True)[0]
-        alpha = alpha - args.step_size * alpha_grad
-        alpha0 = alpha.detach().cpu().numpy()
-        alpha0 = euclidean_proj_simplex(alpha0)
+        with torch.no_grad():
+            alpha = alpha - args.step_size * alpha_grad
+            alpha0 = alpha.detach().cpu().numpy()
+            alpha0 = euclidean_proj_simplex(alpha0)
+
+        # Compute gradients for beta and update
         beta_grad = torch.autograd.grad(outputs=objective, inputs=beta)[0]
-        beta = beta - args.step_size * beta_grad
-        beta0 = beta.detach().cpu().numpy()
-        beta0 = euclidean_proj_simplex(beta0)
+        with torch.no_grad():
+            beta = beta - args.step_size * beta_grad
+            beta0 = beta.detach().cpu().numpy()
+            beta0 = euclidean_proj_simplex(beta0)
+    # for ii in range(args.joint_epoch):
+    #     alpha = torch.autograd.Variable(torch.tensor(alpha0)).cuda()
+    #     alpha.requires_grad = True
+    #     beta = torch.autograd.Variable(torch.tensor(beta0)).cuda()
+    #     beta.requires_grad = True
+    #     A = (As * alpha).sum(2)
+    #     B = (Bs * beta).sum(2)
+    #     objective = (A ** 2).mean() + (B ** 2).mean() - torch.trace(A @ X @ B @ X.T)
+    #     alpha_grad = torch.autograd.grad(outputs=objective, inputs=alpha, retain_graph=True)[0]
+    #     alpha = alpha - args.step_size * alpha_grad
+    #     alpha0 = alpha.detach().cpu().numpy()
+    #     alpha0 = euclidean_proj_simplex(alpha0)
+    #     beta_grad = torch.autograd.grad(outputs=objective, inputs=beta)[0]
+    #     beta = beta - args.step_size * beta_grad
+    #     beta0 = beta.detach().cpu().numpy()
+    #     beta0 = euclidean_proj_simplex(beta0)
         X, _, _ = gw_torch(A.clone().detach(), B.clone().detach(), a, b, X.clone().detach(), beta=args.gw_beta,
                            outer_iter=1, inner_iter=50)
         X = X.clone().detach()
